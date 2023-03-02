@@ -25,12 +25,28 @@ describe('Band and Musician Models', () => {
 
 	test('can create a Musician', async () => {
 		// TODO - test creating a musician
-		let newBand = await Musician.create({
+		let musician = await Musician.create({
 			name: 'Aaron',
 			instrument: 'Guns',
 		});
-		expect(newBand).toBeInstanceOf(Object);
-		expect(newBand.name).toBe('Aaron');
-		expect(newBand.instrument).toEqual('Guns');
+		expect(musician).toBeInstanceOf(Object);
+		expect(musician.name).toBe('Aaron');
+		expect(musician.instrument).toEqual('Guns');
+	});
+
+	test('associations for bands and musicians works properly', async () => {
+		let newBand = await Band.create({
+			name: 'Aaron',
+			genre: 'War',
+		});
+		let musician = await Musician.create({
+			name: 'Aaron',
+			instrument: 'Guns',
+			bandId: newBand.id,
+		});
+		let findBandId = await (
+			await Band.findByPk(musician.dataValues.bandId)
+		).dataValues.name;
+		expect(findBandId).toBe('Aaron');
 	});
 });
