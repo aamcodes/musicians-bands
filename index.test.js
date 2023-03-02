@@ -1,5 +1,5 @@
 const { sequelize } = require('./db');
-const { Band, Musician } = require('./index');
+const { Band, Musician, Song } = require('./index');
 
 describe('Band and Musician Models', () => {
 	/**
@@ -48,5 +48,39 @@ describe('Band and Musician Models', () => {
 			await Band.findByPk(musician.dataValues.bandId)
 		).dataValues.name;
 		expect(findBandId).toBe('Aaron');
+	});
+
+	test('band with songs many-to-many associations works properly', async () => {
+		let newBand = await Band.create({
+			name: 'Aaron',
+			genre: 'War',
+		});
+		let newSong = await Song.create({
+			title: 'W4R',
+			year: 2023,
+		});
+		let foundBand = await Band.findByPk(newBand.dataValues.id);
+		let foundSong = await Song.findByPk(newSong.dataValues.id);
+		await foundBand.addSong(foundSong.dataValues.id);
+		let findSongsByBand = await foundBand.getSongs();
+		let obj = findSongsByBand[0].dataValues;
+		expect(obj.title).toBe('W4R');
+	});
+
+	test('song with bands many-to-many associations works properly', async () => {
+		let newBand = await Band.create({
+			name: 'Aaron',
+			genre: 'War',
+		});
+		let newSong = await Song.create({
+			title: 'W4R',
+			year: 2023,
+		});
+		let foundBand = await Band.findByPk(newBand.dataValues.id);
+		let foundSong = await Song.findByPk(newSong.dataValues.id);
+		await foundSong.addBand(foundBand.dataValues.id);
+		let findBandBySongs = await foundSong.getBands();
+		let obj = findBandBySongs[0].dataValues;
+		expect(obj.name).toBe('Aaron');
 	});
 });

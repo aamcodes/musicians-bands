@@ -10,4 +10,5 @@ Song.belongsToMany(Band, { through: 'band_songs' });
 module.exports = {
 	Band,
 	Musician,
+	Song,
 };
