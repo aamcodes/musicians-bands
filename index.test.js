@@ -5,7 +5,7 @@ describe('Band and Musician Models', () => {
 	/**
 	 * Runs the code prior to all tests
 	 */
-	beforeAll(async () => {
+	beforeEach(async () => {
 		// the 'sync' method will create tables based on the model class
 		// by setting 'force:true' the tables are recreated each time the
 		// test suite is run
@@ -82,5 +82,37 @@ describe('Band and Musician Models', () => {
 		let findBandBySongs = await foundSong.getBands();
 		let obj = findBandBySongs[0].dataValues;
 		expect(obj.name).toBe('Aaron');
+	});
+
+	test('eager loading works properly', async () => {
+		// create to db
+		let band = await Band.create({
+			name: 'Tornado',
+			genre: 'War',
+		});
+		let musician = await Musician.create({
+			name: 'Aaron',
+			instrument: 'Guns',
+		});
+		let song = await Song.create({
+			title: 'W4R',
+			year: 2023,
+		});
+
+		// confirm in DB
+		let foundBand = await Band.findByPk(band.dataValues.id);
+		let foundMusician = await Musician.findByPk(musician.dataValues.id);
+		let foundSong = await Song.findByPk(song.dataValues.id);
+		await foundBand.addMusician(foundMusician.dataValues.id);
+		await foundBand.addSong(foundSong.dataValues.id);
+
+		let data = await Band.findAll({
+			include: [
+				{ model: Musician, as: 'musicians' },
+				{ model: Song, as: 'songs' },
+			],
+		});
+		expect(data[0].dataValues.musicians.length).toBe(1);
+		expect(data[0].dataValues.songs.length).toBe(1);
 	});
 });
